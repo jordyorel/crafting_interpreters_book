@@ -42,6 +42,7 @@ class Parser {
     private Stmt statement() {
         if(match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
+        if(match(WHILE)) return whileStatement();
         if(match(LEFT_BRACE)) return new Stmt.Block(block());
         return expressionStatement();
     }
@@ -76,6 +77,15 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
+    private Stmt whileStatement() {
+        consume(LEFT_PAREN, "Expected '(' after 'while'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expected ')' after condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
+    }
+
     private Stmt expressionStatement() {
         Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
@@ -94,7 +104,7 @@ class Parser {
     }
 
     private Expr assignment() {
-        Expr expr = equality();
+        Expr expr = or();
         if(match(EQUAL)) {
             Token equals = previous();
             Expr value = assignment();
@@ -104,6 +114,26 @@ class Parser {
                 return new Expr.Assign(name, value);
             }
             error(equals, "Invalid assignment target");
+        }
+        return expr;
+    }
+
+    private Expr or() {
+        Expr expr = and();
+        while (match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = equality();
+        while (match(AND)) {
+            Token operator = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
         return expr;
     }
@@ -229,6 +259,7 @@ class Parser {
         return new ParseError();
     }
 
+    @SuppressWarnings("incomplete-switch")
     private void synchronize() {
         advance();
 

@@ -11,7 +11,6 @@ import java.util.List;
 // import static com.craftinginterpreters.lox.TokenType.PLUS;
 // import static com.craftinginterpreters.lox.TokenType.STAR;
 
-import javax.management.RuntimeErrorException;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment();
@@ -38,7 +37,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
-        // Implement the logic for visitIfStmt
+        if(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
         return null;
     }
 
@@ -61,7 +64,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        // Implement the logic for visitWhileStmt
+        while (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body);
+        }
         return null;
     }
 
@@ -118,8 +123,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitLogicalExpr(Expr.Logical expr) {
-        // Implement the logic for visitLogicalExpr
-        return null;
+        Object left = evaluate(expr.left);
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+
+        return evaluate(expr.right);
     }
 
     void interpret(List<Stmt> statements) {
@@ -137,6 +148,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return expr.value;
     }
 
+    
+    @SuppressWarnings("incomplete-switch")
     @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
@@ -213,6 +226,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
     }
 
+    @SuppressWarnings("incomplete-switch")
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
