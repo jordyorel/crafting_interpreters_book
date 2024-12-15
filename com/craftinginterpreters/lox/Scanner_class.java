@@ -60,36 +60,16 @@ public class Scanner_class {
     private void scanToken() {
         char c = advance();
         switch (c) {
-            case '(':
-                addToken(LEFT_PAREN);
-                break;
-            case ')':
-                addToken(RIGHT_PAREN);
-                break;
-            case '{':
-                addToken(LEFT_BRACE);
-                break;
-            case '}':
-                addToken(RIGHT_BRACE);
-                break;
-            case ',':
-                addToken(COMMA);
-                break;
-            case '.':
-                addToken(DOT);
-                break;
-            case '-':
-                addToken(MINUS);
-                break;
-            case '+':
-                addToken(PLUS);
-                break;
-            case ';':
-                addToken(SEMICOLON);
-                break;
-            case '*':
-                addToken(STAR);
-                break;
+            case '(': addToken(LEFT_PAREN);break;
+            case ')':addToken(RIGHT_PAREN); break;
+            case '{': addToken(LEFT_BRACE); break;
+            case '}': addToken(RIGHT_BRACE); break;
+            case ',': addToken(COMMA); break;
+            case '.': addToken(DOT); break;
+            case '-': addToken(MINUS); break;
+            case '+': addToken(PLUS); break;
+            case ';': addToken(SEMICOLON); break;
+            case '*': addToken(STAR); break;
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -134,8 +114,7 @@ public class Scanner_class {
                 line++;
                 break;
             case '"':
-                string();
-                break;
+                string(); break;
             case 'o':
                 if (peek() == 'r') {
                     addToken(OR);
@@ -158,19 +137,16 @@ public class Scanner_class {
     }
 
     private void identifier() {
-        while (isAlphaNumeric(peek()))
-            advance();
+        while (isAlphaNumeric(peek()))advance();
         String text = source.substring(start, current);
         TokenType type = keywords.get(text);
-        if (type == null)
-            type = IDENTIFIER;
+        if (type == null) type = IDENTIFIER;
         addToken(type);
     }
 
     private void string() {
         while (peek() != '"' && !isAtEnd()) {
-            if (peek() == '\n')
-                line++;
+            if (peek() == '\n') line++;
             advance();
         }
 
@@ -187,18 +163,17 @@ public class Scanner_class {
         addToken(STRING, value);
     }
 
+
     private boolean match(char expected) {
-        if (isAtEnd())
-            return false;
-        if (source.charAt(current) != expected)
-            return false;
+        if (isAtEnd()) return false;
+        if (source.charAt(current) != expected) return false;
+        
         current++;
         return true;
     }
 
     private char peek() {
-        if (isAtEnd())
-            return '\0';
+        if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
 
@@ -259,6 +234,8 @@ public class Scanner_class {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
+        Token token = new Token(type, text, literal, line); 
+        System.out.println(token);
     }
 
 }
