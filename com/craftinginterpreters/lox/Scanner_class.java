@@ -61,7 +61,7 @@ public class Scanner_class {
         char c = advance();
         switch (c) {
             case '(': addToken(LEFT_PAREN);break;
-            case ')':addToken(RIGHT_PAREN); break;
+            case ')': addToken(RIGHT_PAREN); break;
             case '{': addToken(LEFT_BRACE); break;
             case '}': addToken(RIGHT_BRACE); break;
             case ',': addToken(COMMA); break;
@@ -191,7 +191,7 @@ public class Scanner_class {
                 c == '_';
     }
 
-    // This method is used to check if the current character is a alphabetic
+    // This method is used to check if the current character is an alphabetic
     // character or a digit.
     private boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
@@ -234,8 +234,8 @@ public class Scanner_class {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
-        Token token = new Token(type, text, literal, line); 
-        System.out.println(token);
+        // Token token = new Token(type, text, literal, line); 
+        // System.out.println(token);
     }
 
 }

@@ -33,7 +33,7 @@ run: compile
 	$(JAVA) $(MAIN_CLASS)
 
 # Run a Lox script
-run-script: compile
+run_script: compile
 	@read -p "Enter the Lox script path: " script; \
 	$(JAVA) $(MAIN_CLASS) $$script
 

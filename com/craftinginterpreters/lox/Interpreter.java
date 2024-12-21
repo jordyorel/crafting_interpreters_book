@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // import static com.craftinginterpreters.lox.TokenType.BANG_EQUAL;
@@ -14,7 +15,7 @@ import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment();
-
+    final Environment globals = new Environment();
 
     
     @Override
@@ -64,21 +65,30 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
+        // System.out.println("Entering while loop"); // debigging
+        // int loopCount = 0; // debigging
         while (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.body);
+            // loopCount++; // debigging
+
+            // if (loopCount > 100) { // debigging
+            //     System.err.println("Potential infinite loop detected!");
+            //     break;
+            // }
         }
         return null;
     }
 
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
-        // Implement the logic for visitExpressionStmt
+        evaluate(stmt.expression);
         return null;
     }
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        // Implement the logic for visitFunctionStmt
+        LoxFunction function = new LoxFunction(stmt);
+        environment.define(stmt.name.lexeme, function);
         return null;
     }
 
@@ -104,8 +114,25 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitCallExpr(Expr.Call expr) {
-        // Implement the logic for visitCallExpr
-        return null;
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expr argument : expr.arguments) {
+            arguments.add(argument);
+        }
+
+        if(!( callee instanceof LoxCallable)) {
+            throw new RuntimeError(expr.paren,
+             "Can only call funtions and calsses");
+        }
+
+        LoxCallable function = (LoxCallable) callee;
+        if (arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren, "Expected " +
+                    function.arity() + " arguments but got " +
+                    arguments.size() + ".");
+        }
+        return function.call(this, arguments);
     }
 
     @Override
