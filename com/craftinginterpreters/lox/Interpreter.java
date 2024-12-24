@@ -3,19 +3,30 @@ package com.craftinginterpreters.lox;
 import java.util.ArrayList;
 import java.util.List;
 
-// import static com.craftinginterpreters.lox.TokenType.BANG_EQUAL;
-// import static com.craftinginterpreters.lox.TokenType.EQUAL_EQUAL;
-// import static com.craftinginterpreters.lox.TokenType.GREATER;
-// import static com.craftinginterpreters.lox.TokenType.GREATER_EQUAL;
-// import static com.craftinginterpreters.lox.TokenType.LESS;
-// import static com.craftinginterpreters.lox.TokenType.LESS_EQUAL;
-// import static com.craftinginterpreters.lox.TokenType.PLUS;
-// import static com.craftinginterpreters.lox.TokenType.STAR;
-
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment();
     final Environment globals = new Environment();
+
+    Interpreter() {
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter,
+                    List<Object> arguments) {
+                return (double) System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+    }
 
     
     @Override
@@ -26,8 +37,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
-        // Implement the logic for visitReturnStmt
-        return null;
+        Object value =  null;
+        if(stmt.value != null) value = evaluate(stmt.value);
+        throw new Return(value);
     }
 
     @Override
@@ -87,7 +99,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt);
+        LoxFunction function = new LoxFunction(stmt, environment);
         environment.define(stmt.name.lexeme, function);
         return null;
     }
@@ -207,7 +219,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (left instanceof Double && right instanceof Double)
             return;
 
-        throw new RuntimeError(operator, "Operands must a numbers.");
+        throw new RuntimeError(operator, "Operands must a number.");
     }
 
     private boolean isTruthy(Object object) {
